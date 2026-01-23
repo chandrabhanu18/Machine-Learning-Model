@@ -1,0 +1,29 @@
+services:
+  ml_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ml-model-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./models:/app/models
+      - ./app:/app/app
+    environment:
+      - MODEL_PATH=/app/models/model.pkl
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+      - DEBUG=${DEBUG:-False}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - ml-network
+    restart: unless-stopped
+
+networks:
+  ml-network:
+    driver: bridge
